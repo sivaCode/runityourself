@@ -1,0 +1,13 @@
+# A small, harmless demo app for Colima: one web server, published on this Mac only (127.0.0.1),
+# with its pages in a named volume. The volume lives inside the Colima VM, not in this folder.
+name: colima-demo
+services:
+  web:
+    image: nginx:1.30.6-alpine          # pinned; stable branch on 15 Nov 2026
+    ports:
+      - "127.0.0.1:8080:80"             # localhost only: nothing on your network can reach it
+    volumes:
+      - html:/usr/share/nginx/html      # a named volume: Docker fills it from the image on first start
+    restart: "no"                       # stays down until you start it again
+volumes:
+  html:

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Local AI on your 16 GB Mac with Ollama: 5.3 GB for an 8B model: what it builds</title>
+<style>
+:root { --night:#0B0F14; --ink:#111418; --paper:#F4F1E8; --grey:#C9CED6; --yellow:#FFD21A; }
+body { margin:0; background:var(--night); color:var(--paper); font:17px/1.5 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+main { max-width:1240px; margin:0 auto; padding:40px 20px 60px; }
+h1 { font-size:28px; margin:0 0 6px; } .rule { width:120px; height:6px; background:var(--yellow); border-radius:3px; margin:0 0 28px; }
+svg { width:100%; height:auto; display:block; }
+.n rect { fill:var(--ink); stroke:rgba(201,206,214,.35); stroke-width:1.5; }
+.n { opacity:0; animation:in .6s ease forwards; }
+.nl { fill:var(--paper); font-size:21px; font-weight:650; } .ns { fill:var(--grey); font-size:15px; }
+.e { fill:none; stroke:var(--grey); stroke-width:2.4; stroke-dasharray:600; stroke-dashoffset:600; animation:draw 1s ease forwards; }
+.el { fill:var(--grey); font-size:14px; text-anchor:middle; }
+ol { color:var(--grey); max-width:900px; } a { color:var(--paper); }
+footer { margin-top:30px; color:var(--grey); font-size:14px; }
+@keyframes in { to { opacity:1; } } @keyframes draw { to { stroke-dashoffset:0; } }
+@media (prefers-reduced-motion: reduce) { .n, .e { animation:none; opacity:1; stroke-dashoffset:0; } }
+</style></head>
+<body><main><h1>Local AI on your 16 GB Mac with Ollama: 5.3 GB for an 8B model</h1><div class="rule"></div>
+<svg viewBox="0 0 1510 204" role="img" aria-label="Local AI on your 16 GB Mac with Ollama: 5.3 GB for an 8B model"><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#C9CED6"/></marker></defs><path class="e" style="animation-delay:0.40s" d="M270,102 C353,102 353,102 436,102" marker-end="url(#a)"/><text class="el" x="353" y="94">num_ctx</text><path class="e" style="animation-delay:0.65s" d="M670,102 C753,102 753,102 836,102" marker-end="url(#a)"/><text class="el" x="753" y="94">starts</text><path class="e" style="animation-delay:0.90s" d="M1070,102 C1153,102 1153,102 1236,102" marker-end="url(#a)"/><text class="el" x="1153" y="94">loads</text><g class="n" style="animation-delay:0.00s"><rect x="40" y="60" width="230" height="84" rx="14"/><text class="nl" x="60" y="96">measure.sh</text><text class="ns" x="60" y="122">one model at a time</text></g><g class="n" style="animation-delay:0.15s"><rect x="440" y="60" width="230" height="84" rx="14"/><text class="nl" x="460" y="96">Ollama server</text><text class="ns" x="460" y="122">127.0.0.1:11434</text></g><g class="n" style="animation-delay:0.30s"><rect x="840" y="60" width="230" height="84" rx="14"/><text class="nl" x="860" y="96">Model runner</text><text class="ns" x="860" y="122">llama-server</text></g><g class="n" style="animation-delay:0.45s"><rect x="1240" y="60" width="230" height="84" rx="14"/><text class="nl" x="1260" y="96">Unified memory</text><text class="ns" x="1260" y="122">GPU share, pressure, swap</text></g></svg>
+<ol><li>measure.sh asks the local Ollama server to load one model, at a context size you choose.</li><li>The server starts a model runner, which takes its share of the Mac&#x27;s unified memory.</li><li>Then it reads ollama ps, the runner&#x27;s resident memory, memory pressure and swap, and stops at the first context that no longer fits on the GPU.</li></ol>
+<footer>Run It Yourself · <a href="../README.md">back to the folder</a></footer>
+</main></body></html>

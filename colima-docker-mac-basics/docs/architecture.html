@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Replace Docker Desktop with Colima on your Mac: $0 vs $24/mo: what it builds</title>
+<style>
+:root { --night:#0B0F14; --ink:#111418; --paper:#F4F1E8; --grey:#C9CED6; --yellow:#FFD21A; }
+body { margin:0; background:var(--night); color:var(--paper); font:17px/1.5 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+main { max-width:1240px; margin:0 auto; padding:40px 20px 60px; }
+h1 { font-size:28px; margin:0 0 6px; } .rule { width:120px; height:6px; background:var(--yellow); border-radius:3px; margin:0 0 28px; }
+svg { width:100%; height:auto; display:block; }
+.n rect { fill:var(--ink); stroke:rgba(201,206,214,.35); stroke-width:1.5; }
+.n { opacity:0; animation:in .6s ease forwards; }
+.nl { fill:var(--paper); font-size:21px; font-weight:650; } .ns { fill:var(--grey); font-size:15px; }
+.e { fill:none; stroke:var(--grey); stroke-width:2.4; stroke-dasharray:600; stroke-dashoffset:600; animation:draw 1s ease forwards; }
+.el { fill:var(--grey); font-size:14px; text-anchor:middle; }
+ol { color:var(--grey); max-width:900px; } a { color:var(--paper); }
+footer { margin-top:30px; color:var(--grey); font-size:14px; }
+@keyframes in { to { opacity:1; } } @keyframes draw { to { stroke-dashoffset:0; } }
+@media (prefers-reduced-motion: reduce) { .n, .e { animation:none; opacity:1; stroke-dashoffset:0; } }
+</style></head>
+<body><main><h1>Replace Docker Desktop with Colima on your Mac: $0 vs $24/mo</h1><div class="rule"></div>
+<svg viewBox="0 0 1200 452" role="img" aria-label="Replace Docker Desktop with Colima on your Mac: $0 vs $24/mo"><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#C9CED6"/></marker></defs><path class="e" style="animation-delay:0.40s" d="M270,350 C376,350 376,226 481,226" marker-end="url(#a)"/><text class="el" x="376" y="280">starts</text><path class="e" style="animation-delay:0.65s" d="M715,226 C820,226 820,226 926,226" marker-end="url(#a)"/><path class="e" style="animation-delay:0.90s" d="M270,102 C376,102 376,226 481,226" marker-end="url(#a)"/><text class="el" x="376" y="156">socket</text><path class="e" style="animation-delay:1.15s" d="M270,226 C376,226 376,226 481,226" marker-end="url(#a)"/><g class="n" style="animation-delay:0.00s"><rect x="40" y="60" width="230" height="84" rx="14"/><text class="nl" x="60" y="96">docker</text><text class="ns" x="60" y="122">command line</text></g><g class="n" style="animation-delay:0.15s"><rect x="40" y="184" width="230" height="84" rx="14"/><text class="nl" x="60" y="220">docker-compose</text><text class="ns" x="60" y="246">compose.yaml</text></g><g class="n" style="animation-delay:0.30s"><rect x="40" y="308" width="230" height="84" rx="14"/><text class="nl" x="60" y="344">Colima</text><text class="ns" x="60" y="370">Homebrew</text></g><g class="n" style="animation-delay:0.45s"><rect x="485" y="184" width="230" height="84" rx="14"/><text class="nl" x="505" y="220">Docker engine</text><text class="ns" x="505" y="246">in the Lima VM</text></g><g class="n" style="animation-delay:0.60s"><rect x="930" y="184" width="230" height="84" rx="14"/><text class="nl" x="950" y="220">Containers</text><text class="ns" x="950" y="246">hello-world, nginx</text></g></svg>
+<ol><li>Colima starts a Lima virtual machine, and the Docker engine runs inside it.</li><li>That engine runs every container we start.</li><li>The docker and docker-compose commands reach it through a socket.</li></ol>
+<footer>Run It Yourself · <a href="../README.md">back to the folder</a></footer>
+</main></body></html>
