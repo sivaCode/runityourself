@@ -1,10 +1,10 @@
-> **Run It Yourself:** Replace Docker Desktop with Colima on your Mac: $0 vs $24/mo
+> **Run It Yourself:** Replace Docker Desktop with Colima on your Mac: $0 vs $24/mo · [watch](https://youtu.be/Y1gBhMzgs_s)
 >
 > [The commands, in order](docs/commands.md) · [What it builds](docs/architecture.html) · [References](docs/references.md)
 
 # Colima: Docker on your Mac without Docker Desktop (Run It Yourself)
 
-Companion files for the Run It Yourself video (its link is added here once it is published).
+Companion files for the video: https://youtu.be/Y1gBhMzgs_s
 
 Colima runs a small Linux VM on your Mac with the Docker engine inside it. The normal `docker` and `docker-compose`
 commands on your Mac talk to that VM. This folder installs Colima, the Docker CLI and docker-compose with Homebrew,
