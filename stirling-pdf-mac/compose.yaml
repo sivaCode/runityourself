@@ -1,0 +1,30 @@
+# Stirling-PDF on your Mac, in one container on Colima. Reachable from this Mac only (127.0.0.1).
+# Based on the official Docker quick start (docs.stirlingpdf.com, read 16 Nov 2026), with three changes:
+# a pinned version, a localhost-only port, and login + analytics turned off (single user, this Mac only).
+name: stirling-pdf
+services:
+  stirling-pdf:
+    image: docker.stirlingpdf.com/stirlingtools/stirling-pdf:3.3.0   # pinned (5 Nov 2026); `latest` moves
+    container_name: stirling-pdf
+    ports:
+      - "127.0.0.1:8080:8080"      # localhost only: nothing else on your network can reach it
+    environment:
+      SECURITY_ENABLELOGIN: "false"     # no accounts: only this Mac can reach it (see the port above)
+      SYSTEM_ENABLEANALYTICS: "false"   # no usage analytics, no cookie banner
+      SYSTEM_DEFAULTLOCALE: "en-US"
+    volumes:                       # your settings and data, in folders next to this file
+      - ./stirling-data/configs:/configs          # settings.yml, the built-in database, keys: back this up
+      - ./stirling-data/logs:/logs
+      - ./stirling-data/customFiles:/customFiles
+      - ./stirling-data/pipeline:/pipeline
+      - ./stirling-data/storage:/storage
+      - ./stirling-data/tessdata:/usr/share/tessdata   # extra OCR languages you download stay here
+    healthcheck:                   # the image's own check; while starting, look every 5 s instead of every 30 s
+      test: ["CMD-SHELL", "curl -fs --max-time 10 http://localhost:8080/api/v1/info/status || exit 1"]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+      start_period: 120s
+      start_interval: 5s
+    mem_limit: 4g                  # the docs' suggestion; the Java heap is sized from it
+    restart: unless-stopped        # comes back when Colima starts; `docker-compose stop` keeps it down

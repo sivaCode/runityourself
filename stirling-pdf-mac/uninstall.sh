@@ -1,0 +1,129 @@
+#!/bin/bash
+# Remove Stirling-PDF: the container, its image and the stirling-data folder (your settings: back up
+# stirling-data/configs first). Then put the Mac back as it was found (.state/before.env, saved by install.sh):
+# a Colima VM that install.sh created is deleted, one that was there already is left as it was.
+# Works from any state: installed or not, VM running, stopped or missing, tools present or not.
+#   ./uninstall.sh            asks before deleting stirling-data (when run in a terminal)
+#   ./uninstall.sh --yes      no questions
+#   ./uninstall.sh --keep-data
+set -uo pipefail
+HERE="$(cd "$(dirname "$0")" && pwd)"
+source "$HERE/lib/state.sh"
+DC=(docker-compose -f "$HERE/compose.yaml")
+YES=no; KEEP_DATA=no
+for a in "$@"; do case "$a" in --yes|-y) YES=yes ;; --keep-data) KEEP_DATA=yes ;; esac; done
+problems=0
+note() { echo "note: $*"; }
+bad()  { echo "PROBLEM: $*"; problems=$((problems + 1)); }
+
+# Without a saved state, keep what might be yours (the VM, folders, caches, formulae); remove only Stirling-PDF.
+WAS_colima=keep WAS_lima=keep WAS_docker=keep WAS_docker_compose=keep WAS_VM=keep WAS_VM_SIZE=""
+IMAGE_EXISTED=no DATA_EXISTED=no
+COLIMA_DIR_EXISTED=keep DOCKER_DIR_EXISTED=keep DOCKER_CONFIG_EXISTED=keep SSH_CONFIG_EXISTED=keep
+COLIMA_CACHE_EXISTED=yes LIMA_CACHE_EXISTED=yes
+if [[ -f "$STATE" ]]; then source "$STATE"; else note "no saved state: only Stirling-PDF is removed"; fi
+
+# 1. The container and the image
+if engine_up; then
+  limit 120 "${DC[@]}" down --remove-orphans >/dev/null 2>&1 || bad "docker-compose down failed"
+  docker rm -f stirling-pdf >/dev/null 2>&1 || true
+  if [[ "$IMAGE_EXISTED" != yes ]] && docker image inspect "$IMAGE" >/dev/null 2>&1; then
+    docker image rm "$IMAGE" >/dev/null || bad "could not remove the image"
+  fi
+  [[ -z "$(docker ps -aq --filter name=^stirling-pdf$)" ]] || bad "the stirling-pdf container is still there"
+elif [[ "$WAS_VM" != none && "$(vm_status)" == Stopped ]]; then
+  note "Colima is stopped, so the container and image inside it stay: run 'colima start', then ./uninstall.sh again"
+fi
+
+# 2. The data folder and the demo outputs
+if [[ -d "$DATA" ]]; then
+  if [[ "$KEEP_DATA" == yes ]]; then
+    note "stirling-data kept"
+  else
+    ok="$YES"
+    if [[ "$ok" != yes && -t 0 ]]; then
+      read -r -p "Delete stirling-data (settings, database, saved files) and configs-backup*.tgz? [y/N] " ans
+      [[ "$ans" == [yY]* ]] && ok=yes
+    elif [[ "$ok" != yes ]]; then
+      ok=yes        # no terminal (run from another script): the saved state decides what was ours
+      [[ "$DATA_EXISTED" == yes ]] && ok=no
+    fi
+    if [[ "$ok" == yes ]]; then
+      # files the container wrote are owned by the VM's user; through Colima's mount they are still ours to delete
+      rm -rf "$DATA" || bad "could not delete stirling-data"
+      rm -f "$HERE"/configs-backup*.tgz          # the backups of stirling-data/configs go with it
+    else
+      note "stirling-data kept"
+    fi
+  fi
+fi
+rm -rf "$HERE/demo/out"
+
+# 3. The Colima VM: delete it only if it wasn't there before; otherwise leave it as it was found
+case "$WAS_VM" in
+  none)
+    if [[ "$(vm_status)" != none ]]; then
+      limit 300 colima delete --data --force >/dev/null 2>&1 ||
+        { limit 120 colima stop --force >/dev/null 2>&1 || true; limit 300 colima delete --data --force >/dev/null 2>&1 || bad "colima delete failed"; }
+    fi
+    pgrep -f 'limactl hostagent.*colima' >/dev/null && { pkill -f 'limactl hostagent.*colima' || true; sleep 2; }
+    pgrep -f 'limactl hostagent.*colima' >/dev/null && bad "a Colima VM process is still running" ;;
+  Stopped)
+    [[ "$(vm_status)" == Running ]] && { limit 120 colima stop >/dev/null 2>&1 || bad "colima stop failed"; } ;;
+  *) : ;;   # Running or unknown: left running
+esac
+
+# 4. Docker CLI settings (colima start adds a context and sets it as current)
+if [[ "$WAS_VM" == none ]]; then
+  case "$DOCKER_DIR_EXISTED" in
+    no)  rm -rf "$HOME/.docker" ;;
+    yes) if command -v docker >/dev/null 2>&1; then docker context rm -f colima >/dev/null 2>&1 || true; fi
+         if [[ -f "$STATE_DIR/docker-config.json" ]]; then cp -p "$STATE_DIR/docker-config.json" "$HOME/.docker/config.json"
+         elif [[ "$DOCKER_CONFIG_EXISTED" == no ]]; then rm -f "$HOME/.docker/config.json"; fi ;;
+    *)   : ;;
+  esac
+
+  # ~/.ssh/config: colima start puts "Include ~/.colima/ssh_config" and a blank line at the top.
+  SSHC="$HOME/.ssh/config"
+  if [[ -f "$SSHC" ]] && grep -Eq '^Include .*\.colima/ssh_config$' "$SSHC"; then
+    tmp="$(mktemp "$HOME/.ssh/.config.XXXXXX")"
+    awk '/^Include .*\.colima\/ssh_config$/ {skip=1; next} skip && /^$/ {skip=0; next} {skip=0; print}' "$SSHC" > "$tmp" &&
+      chmod 600 "$tmp" && mv "$tmp" "$SSHC" || { rm -f "$tmp"; bad "could not take colima's line out of ~/.ssh/config"; }
+  fi
+  if [[ "$SSH_CONFIG_EXISTED" == no && -f "$SSHC" && ! -s "$SSHC" ]]; then rm -f "$SSHC"; fi
+  if [[ -f "$STATE_DIR/ssh-config.sha256" && -f "$SSHC" ]]; then
+    [[ "$(shasum -a 256 "$SSHC" | awk '{print $1}')" == "$(cat "$STATE_DIR/ssh-config.sha256")" ]] ||
+      note "~/.ssh/config differs from how it was found"
+  fi
+
+  # ~/.colima back to its found skeleton (only if no other profile is there), and the VM image caches
+  if [[ "$COLIMA_DIR_EXISTED" != keep ]] && command -v colima >/dev/null 2>&1; then
+    if [[ -n "$(colima list --json 2>/dev/null | grep -o '"name":"[^"]*"' || true)" ]]; then
+      note "other Colima profiles exist; ~/.colima is kept"
+    else
+      rm -rf "$HOME/.colima"
+      if [[ "$COLIMA_DIR_EXISTED" == yes ]]; then
+        mkdir -p "$HOME/.colima"
+        [[ -f "$STATE_DIR/colima-dirs.txt" ]] && while IFS= read -r d; do mkdir -p "$HOME/.colima/${d#./}"; done < "$STATE_DIR/colima-dirs.txt"
+      fi
+    fi
+  fi
+  [[ "$COLIMA_CACHE_EXISTED" == no ]] && rm -rf "$HOME/Library/Caches/colima"
+  [[ "$LIMA_CACHE_EXISTED" == no ]] && rm -rf "$HOME/Library/Caches/lima"
+fi
+
+# 5. Formulae: back to the found set (removed if install.sh added them, reinstalled if they were there before)
+for f in colima docker docker-compose lima; do
+  var="WAS_${f//-/_}"; was="${!var}"; now="$(ver_of "$f")"
+  if [[ "$was" == none && -n "$now" ]]; then
+    [[ "$f" == lima && -n "$(brew uses --installed lima 2>/dev/null || true)" ]] && { note "lima kept: another formula needs it"; continue; }
+    brew uninstall --formula "$f" >/dev/null || bad "brew uninstall $f failed"
+  elif [[ "$was" != none && "$was" != keep && -z "$now" ]]; then
+    [[ "$f" == lima ]] && continue                     # comes back with colima
+    limit 900 brew install "$f" >/dev/null || bad "brew install $f failed"
+  fi
+done
+
+(( problems == 0 )) || { echo "uninstall finished with $problems problem(s); .state kept"; exit 1; }
+if [[ -f "$STATE" ]]; then rm -rf "$STATE_DIR"; echo "uninstalled (Stirling-PDF container, image and data removed; the Mac is as it was found)"
+else rm -rf "$STATE_DIR"; echo "uninstalled (Stirling-PDF removed; Colima and your other settings left as they are)"; fi
