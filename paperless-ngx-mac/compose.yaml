@@ -1,0 +1,58 @@
+# Paperless-ngx on your Mac, on Colima: the web app, PostgreSQL and a Redis-compatible broker (Valkey).
+# Reachable from this Mac only (127.0.0.1). Based on the official docker-compose.postgres.yml (v3.5.0 tag, read
+# 17 Nov 2026), with these changes: pinned versions, a localhost-only port, generated secrets instead of the
+# template's "change-me" and "paperless" (they live in .env, made by install.sh; never print it), the consume folder
+# polled every 5 s (Colima's shared folders don't pass file events into the VM), duplicates skipped, and a faster
+# health check at start.
+name: paperless
+services:
+  broker:
+    image: docker.io/valkey/valkey:9-alpine
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+  db:
+    image: docker.io/library/postgres:18
+    restart: unless-stopped
+    volumes:
+      - pgdata:/var/lib/postgresql          # PostgreSQL 18 keeps its data here (not .../data)
+    environment:
+      POSTGRES_DB: paperless
+      POSTGRES_USER: paperless
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?run ./install.sh first (it writes .env)}
+  webserver:
+    image: ghcr.io/paperless-ngx/paperless-ngx:3.5.0   # pinned (17 Nov 2026); `latest` moves
+    restart: unless-stopped
+    depends_on:
+      - db
+      - broker
+    ports:
+      - "127.0.0.1:8000:8000"   # localhost only: nothing else on your network can reach it
+    volumes:
+      - data:/usr/src/paperless/data          # search index, settings
+      - media:/usr/src/paperless/media        # your documents (originals and archived PDFs)
+      - ./export:/usr/src/paperless/export    # backups from the document exporter land here, on the Mac
+      - ./consume:/usr/src/paperless/consume  # drop scans here
+    environment:
+      PAPERLESS_REDIS: redis://broker:6379
+      PAPERLESS_DBHOST: db
+      PAPERLESS_DBENGINE: postgresql          # v3 falls back to SQLite without it
+      PAPERLESS_DBPASS: ${DB_PASSWORD:?run ./install.sh first (it writes .env)}
+      PAPERLESS_SECRET_KEY: ${SECRET_KEY:?run ./install.sh first (it writes .env)}
+      PAPERLESS_URL: http://localhost:8000    # accept only localhost (and 127.0.0.1, below) as the host name
+      PAPERLESS_ALLOWED_HOSTS: 127.0.0.1
+      PAPERLESS_OCR_LANGUAGE: eng
+      PAPERLESS_CONSUMER_POLLING_INTERVAL: 5  # look in consume/ every 5 s
+      PAPERLESS_CONSUMER_DELETE_DUPLICATES: "true"   # the same scan dropped twice is skipped, not filed twice
+    healthcheck:                # the image's own check; while starting, look every 5 s instead of every 30 s
+      test: ["CMD", "curl", "-fs", "-S", "-L", "--max-time", "2", "http://localhost:8000"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 300s
+      start_interval: 5s
+volumes:
+  data:
+  media:
+  pgdata:
+  redisdata:
