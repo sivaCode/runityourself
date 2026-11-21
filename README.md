@@ -6,6 +6,7 @@ on camera and checked with a verify script. One folder per video:
 | Folder | Video |
 |---|---|
 | [colima-docker-mac-basics](colima-docker-mac-basics/) | [Replace Docker Desktop with Colima on your Mac: $0 vs $24/mo](https://youtu.be/Y1gBhMzgs_s) |
+| [lmstudio-install-chat-mac](lmstudio-install-chat-mac/) | Local AI on your Mac with LM Studio: a 2.10 GB model, Wi-Fi off |
 | [local-ai-memory-measured-mac](local-ai-memory-measured-mac/) | Local AI on your 16 GB Mac with Ollama: 5.3 GB for an 8B model |
 | [open-webui-ollama-mac](open-webui-ollama-mac/) | Replace ChatGPT Plus with Open WebUI and Ollama on your Mac |
 | [paperless-ngx-mac](paperless-ngx-mac/) | Replace Evernote for scanned paperwork with Paperless-ngx on your Mac |

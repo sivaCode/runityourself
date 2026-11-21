@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Local AI on your Mac with LM Studio: a 2.10 GB model, Wi-Fi off: what it builds</title>
+<style>
+:root { --night:#0B0F14; --ink:#111418; --paper:#F4F1E8; --grey:#C9CED6; --yellow:#FFD21A; }
+body { margin:0; background:var(--night); color:var(--paper); font:17px/1.5 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+main { max-width:1240px; margin:0 auto; padding:40px 20px 60px; }
+h1 { font-size:28px; margin:0 0 6px; } .rule { width:120px; height:6px; background:var(--yellow); border-radius:3px; margin:0 0 28px; }
+svg { width:100%; height:auto; display:block; }
+.n rect { fill:var(--ink); stroke:rgba(201,206,214,.35); stroke-width:1.5; }
+.n { opacity:0; animation:in .6s ease forwards; }
+.nl { fill:var(--paper); font-size:21px; font-weight:650; } .ns { fill:var(--grey); font-size:15px; }
+.e { fill:none; stroke:var(--grey); stroke-width:2.4; stroke-dasharray:600; stroke-dashoffset:600; animation:draw 1s ease forwards; }
+.el { fill:var(--grey); font-size:14px; text-anchor:middle; }
+ol { color:var(--grey); max-width:900px; } a { color:var(--paper); }
+footer { margin-top:30px; color:var(--grey); font-size:14px; }
+@keyframes in { to { opacity:1; } } @keyframes draw { to { stroke-dashoffset:0; } }
+@media (prefers-reduced-motion: reduce) { .n, .e { animation:none; opacity:1; stroke-dashoffset:0; } }
+</style></head>
+<body><main><h1>Local AI on your Mac with LM Studio: a 2.10 GB model, Wi-Fi off</h1><div class="rule"></div>
+<svg viewBox="0 0 1200 328" role="img" aria-label="Local AI on your Mac with LM Studio: a 2.10 GB model, Wi-Fi off"><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#C9CED6"/></marker></defs><path class="e" style="animation-delay:0.40s" d="M270,102 C376,102 376,164 481,164" marker-end="url(#a)"/><text class="el" x="376" y="125">installs</text><path class="e" style="animation-delay:0.65s" d="M270,226 C376,226 376,164 481,164" marker-end="url(#a)"/><path class="e" style="animation-delay:0.90s" d="M715,164 C820,164 820,164 926,164" marker-end="url(#a)"/><text class="el" x="820" y="156">lms get</text><g class="n" style="animation-delay:0.00s"><rect x="40" y="60" width="230" height="84" rx="14"/><text class="nl" x="60" y="96">install.sh</text><text class="ns" x="60" y="122">lmstudio.ai, one line</text></g><g class="n" style="animation-delay:0.15s"><rect x="40" y="184" width="230" height="84" rx="14"/><text class="nl" x="60" y="220">lms</text><text class="ns" x="60" y="246">command line, starts it</text></g><g class="n" style="animation-delay:0.30s"><rect x="485" y="122" width="230" height="84" rx="14"/><text class="nl" x="505" y="158">llmster</text><text class="ns" x="505" y="184">the engine, no app window</text></g><g class="n" style="animation-delay:0.45s"><rect x="930" y="122" width="230" height="84" rx="14"/><text class="nl" x="950" y="158">Granite 4.1 3B</text><text class="ns" x="950" y="184">~/.lmstudio/models</text></g></svg>
+<ol><li>LM Studio&#x27;s script installs the llmster engine.</li><li>lms starts it and downloads a small model.</li><li>Then lms chat asks that model, even offline.</li></ol>
+<footer>Run It Yourself · <a href="../README.md">back to the folder</a></footer>
+</main></body></html>
